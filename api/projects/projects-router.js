@@ -8,9 +8,9 @@ const {
 const router = express.Router();
 
 router.get('/', (req, res, next) => {
-    Projects.get(req.body)
+    Projects.get()
     .then(data => {
-        res.status(200).json(data)
+        res.json(data)
     })
     .catch(next)
 })
@@ -23,30 +23,30 @@ router.post('/', checkList, async (req, res, next) => {
     try {
         const proj = await Projects.insert(req.body)
         if(!proj) {
-            res.status(400).json({message: "what"})
+            res.status(400)
     } else {
-        res.status(201).json(req.project)
+        res.json(req.checkedProj)
     }} catch(err) {
         next(err)
     }
 })
 
-router.put('/:id', validateId, checkList, async (req, res, next) => {
-    try {
-        const proj = await Projects.update(req.params.id, req.body)
-        if(!proj) {
-            res.status(400).json({message: "really?"})
-        } else {
-            res.status(201).json(req.project)}
-    } catch(err) {
-            next(err)
+router.put('/:id', validateId, checkList, (req, res, next) => {
+    if(!req.body) {
+        res.status(400).json({message: "missing things"})
+    } else {
+        Projects.update(req.params.id, req.checkedProj)
+            .then(data => {
+                res.json(data)
+            })
+            .catch(next)
     }
 })
 
 router.delete('/:id', validateId, (req, res, next) => {
-    Projects.remove(req.params.id, req.body)
+    Projects.remove(req.params.id)
         .then(data => {
-            res.status(200).json({message: "deleted"})
+            console.log(data)
         })
         .catch(next)
 })
@@ -59,7 +59,7 @@ router.get('/:id/actions', validateId, (req, res, next) => {
     .catch(next)
 })
 
-router.use((err, req, res, next) => {
+router.use((err, req, res, next) => { //eslint-disable-line
     res.status(500).json({message: "check go bouncy bounce"})
 })
 
